@@ -1,15 +1,39 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.printf("Hello and welcome!");
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
-        }
+        JOptionPane optionPane = new JOptionPane();
+        optionPane.setMessage("Hellow");
+
+        //swing integration
+        JFrame frame = new JFrame("clicker game");
+
+        JButton one = new JButton("");
+        JButton two = new JButton("");
+        JButton three = new JButton("");
+        JButton one2 = new JButton("");
+        JButton two2 = new JButton("");
+        JButton three2 = new JButton("");
+        JButton one3 = new JButton("");
+        JButton two3 = new JButton("");
+        JButton three3 = new JButton("");
+
+
+        frame.setLayout(new GridLayout(3,1));
+        frame.setSize(300,300);
+        frame.add(one);
+        frame.add(two);
+        frame.add(three);
+        frame.add(one2);
+        frame.add(two2);
+        frame.add(three2);
+        frame.add(one3);
+        frame.add(two3);
+        frame.add(three3);
+
+        frame.setVisible(true);
     }
 }
