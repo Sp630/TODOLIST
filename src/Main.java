@@ -4,6 +4,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
 
 public class Main {
     public static void main(String[] args) {
@@ -23,6 +26,7 @@ public class Main {
 
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
+                        
                         for (Task task : tasks) {
                             if (task.getName().equals(button.getText())) {
                                 taskToRemove = task;
@@ -36,6 +40,7 @@ public class Main {
                         screen.updateTasks(tasks);
                         ArrayList<JButton> buttons = screen.draw();
                         redoCanvas(buttons, tasks, screen);
+                        screen.getSoundPlayer().playClickSound();
                     }
                 });
             }
@@ -77,13 +82,18 @@ class Screen {
     private ArrayList<Task> tasks;
     private final JTextField textField = new JTextField();
     private final JFrame frame = new JFrame("Clicker Game");
+    private SoundPlayer soundPlayer = new SoundPlayer("pickupCoin.wav");
 
     public Screen(ArrayList<Task> tasks) {
-        this.tasks = tasks != null ? tasks : new ArrayList<>();
+        
+        this.tasks = tasks;
     }
 
+    public SoundPlayer getSoundPlayer(){
+        return soundPlayer;
+    }
     public void updateTasks(ArrayList<Task> tasks) {
-        this.tasks = tasks != null ? tasks : new ArrayList<>();
+        this.tasks = tasks;
     }
 
     public JTextField getTextField() {
@@ -153,7 +163,7 @@ class Screen {
     }
 
     public void restoreInfo() {
-        tasks = new ArrayList<>();
+
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("SavedTasks"))) {
             while (true) {
                 try {
@@ -164,7 +174,7 @@ class Screen {
                 }
             }
         } catch (FileNotFoundException e) {
-            // No saved file yet, ignore
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -185,4 +195,35 @@ class Task implements Serializable {
     public void setName(String name) {
         this.name = name;
     }
+}
+
+class SoundPlayer{
+    String path;
+    public SoundPlayer(String path){
+        this.path = path;
+    }
+
+    void playClickSound(String path) {
+        try {
+            File soundFile = new File(path);
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioIn);
+            clip.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+    void playClickSound() {
+        try {
+            File soundFile = new File(path);
+            AudioInputStream audioIn = AudioSystem.getAudioInputStream(soundFile);
+            Clip clip = AudioSystem.getClip();
+            clip.open(audioIn);
+            clip.start();
+        } catch (UnsupportedAudioFileException | IOException | LineUnavailableException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
