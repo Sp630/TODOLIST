@@ -1,5 +1,4 @@
 import javax.swing.*;
-
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -11,31 +10,32 @@ public class Main {
         ArrayList<Task> tasks = new ArrayList<>();
 
         Screen screen = new Screen(tasks);
-        screen.RestoreInfo();
-        ArrayList<JButton> buttons = screen.Draw();
-        ReDoCanvas(buttons, tasks, screen);
-
-
-
+        screen.restoreInfo();
+        ArrayList<JButton> buttons = screen.draw();
+        redoCanvas(buttons, tasks, screen);
     }
-    static void ReDoCanvas(ArrayList<JButton> buttons, ArrayList<Task> tasks, Screen screen){
+
+    static void redoCanvas(ArrayList<JButton> buttons, ArrayList<Task> tasks, Screen screen) {
         for (JButton button : buttons) {
-            if(!button.getText().equals("Add")) {
+            if (!button.getText().equals("Add")) {
                 button.addActionListener(new ActionListener() {
                     Task taskToRemove = null;
+
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
                         for (Task task : tasks) {
-                            if(task.name.equals(button.getText())) {
-                                //tasks.remove(task);
+                            if (task.getName().equals(button.getText())) {
                                 taskToRemove = task;
+                                break;
                             }
                         }
                         button.getParent().remove(button);
-                        tasks.remove(taskToRemove);
-                        screen.UpdateTasks(tasks);
-                        ArrayList<JButton> buttons = screen.Draw();
-                        ReDoCanvas(buttons, tasks, screen);
+                        if (taskToRemove != null) {
+                            tasks.remove(taskToRemove);
+                        }
+                        screen.updateTasks(tasks);
+                        ArrayList<JButton> buttons = screen.draw();
+                        redoCanvas(buttons, tasks, screen);
                     }
                 });
             }
@@ -43,60 +43,63 @@ public class Main {
                 button.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
-
-                        tasks.add(new Task(screen.textField.getText()));
-                        screen.UpdateTasks(tasks);
-                        ArrayList<JButton> buttons = screen.Draw();
-                        button.setText(screen.textField.getText());
-                        ReDoCanvas(buttons, tasks, screen);
+                        String inputText = screen.getTextField().getText();
+                        if (!inputText.isEmpty()) {
+                            tasks.add(new Task(inputText));
+                            screen.updateTasks(tasks);
+                            ArrayList<JButton> buttons = screen.draw();
+                            // Update the button text for the newly added task
+                            button.setText(inputText);
+                            redoCanvas(buttons, tasks, screen);
+                        }
                     }
                 });
             }
-            if(button.getText().equals("Update")) {
+            if (button.getText().equals("Update")) {
                 button.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent actionEvent) {
-
-                        for(int i = 0; i < tasks.size(); i++) {
-                            if(i == tasks.size() - 1) {
-                                tasks.get(i).name = screen.textField.getText();
-                            }
+                        String inputText = screen.getTextField().getText();
+                        if (!inputText.isEmpty() && !tasks.isEmpty()) {
+                            tasks.get(tasks.size() - 1).setName(inputText);
                         }
-
-                        screen.UpdateTasks(tasks);
-                        ArrayList<JButton> buttons = screen.Draw();
-                        ReDoCanvas(buttons, tasks, screen);
+                        screen.updateTasks(tasks);
+                        ArrayList<JButton> buttons = screen.draw();
+                        redoCanvas(buttons, tasks, screen);
                     }
                 });
             }
         }
     }
 }
-class Screen{
-    ArrayList<Task> tasks;
-    JTextField textField = new JTextField();
-    JFrame frame = new JFrame("clicker game");
 
+class Screen {
+    private ArrayList<Task> tasks;
+    private final JTextField textField = new JTextField();
+    private final JFrame frame = new JFrame("Clicker Game");
 
-    public Screen(ArrayList<Task> tasks){
-        this.tasks = tasks;
-
+    public Screen(ArrayList<Task> tasks) {
+        this.tasks = tasks != null ? tasks : new ArrayList<>();
     }
-    void UpdateTasks(ArrayList<Task> tasks){
-        this.tasks = tasks;
 
+    public void updateTasks(ArrayList<Task> tasks) {
+        this.tasks = tasks != null ? tasks : new ArrayList<>();
     }
-    public ArrayList<JButton> Draw(){
 
+    public JTextField getTextField() {
+        return textField;
+    }
+
+    public ArrayList<JButton> draw() {
         frame.getContentPane().removeAll();
         frame.setLayout(new BorderLayout());
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-        frame.setSize(300,300);
+        frame.setSize(300, 300);
 
         ArrayList<JButton> buttons = new ArrayList<>();
-        for(int i = 0; i<tasks.size(); i++){
-            JButton button = new JButton(tasks.get(i).name);
+        for (Task task : tasks) {
+            JButton button = new JButton(task.getName());
             button.setAlignmentX(Component.CENTER_ALIGNMENT);
             Dimension size = new Dimension(200, 50);
             button.setMaximumSize(size);
@@ -105,14 +108,13 @@ class Screen{
             panel.add(button);
             buttons.add(button);
         }
+
         JScrollPane scrollPane = new JScrollPane(panel);
         scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
         scrollPane.getVerticalScrollBar().setUnitIncrement(16);
         frame.getContentPane().add(scrollPane, BorderLayout.CENTER);
 
-        JPanel inputPanel = new JPanel();
-        inputPanel.setLayout(new BorderLayout());
-
+        JPanel inputPanel = new JPanel(new BorderLayout());
 
         JButton addButton = new JButton("Add");
         JButton updateButton = new JButton("Update");
@@ -127,50 +129,60 @@ class Screen{
 
         buttons.add(addButton);
         buttons.add(updateButton);
-        SaveInfo();
+
+        saveInfo();
+
         return buttons;
     }
-    void SaveInfo(){
-        try {
-            FileWriter writer = new FileWriter("SavedTasks", false);
-            writer.close();
-        }
-        catch (IOException e){
+
+    private void saveInfo() {
+        // Clear file first
+        try (FileWriter writer = new FileWriter("SavedTasks", false)) {
+            // Clear contents
+        } catch (IOException e) {
             System.out.println(e.getMessage());
         }
 
-
-        try(ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("SavedTasks"))){
-            for(int i = 0; i<tasks.size(); i++){
-                oos.writeObject(tasks.get(i));
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream("SavedTasks"))) {
+            for (Task task : tasks) {
+                oos.writeObject(task);
             }
-        }
-        catch(Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    void RestoreInfo(){
-        try(ObjectInputStream ois = new ObjectInputStream(new FileInputStream("SavedTasks"))){
-            while (true){
+
+    public void restoreInfo() {
+        tasks = new ArrayList<>();
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream("SavedTasks"))) {
+            while (true) {
                 try {
                     Task task = (Task) ois.readObject();
                     tasks.add(task);
-                }
-                catch (EOFException e){
+                } catch (EOFException e) {
                     break;
                 }
-
             }
-        }
-        catch (Exception e){
+        } catch (FileNotFoundException e) {
+            // No saved file yet, ignore
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 }
+
 class Task implements Serializable {
-    String name;
-    public Task(String name){
+    private String name;
+
+    public Task(String name) {
         this.name = name;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
