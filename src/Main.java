@@ -198,7 +198,15 @@ class Task implements Serializable {
 }
 
 class SoundPlayer{
-    String path;
+    private String path;
+
+    public String getPath(){
+        return path;
+    }
+    public void setPath(String path){
+        this.path = path;
+    }
+
     public SoundPlayer(String path){
         this.path = path;
     }
